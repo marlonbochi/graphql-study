@@ -44,7 +44,7 @@ async function graphqlRequest(query, variables = {}, options = {}) {
             throw new Error(errorMessages || 'An unexpected error occurred');
         }
         
-        return result.data;
+        return result;
     } catch (error) {
         console.error('GraphQL Request Error:', error);
         if (showError) {
@@ -112,6 +112,7 @@ function showResponse(data, isError = false, timeout = 5000) {
  * @param {Array} users - Array of user objects
  */
 function renderUsers(users) {
+	console.log(users);
     const usersGrid = document.getElementById('usersGrid');
     if (!usersGrid) return;
     
@@ -429,6 +430,7 @@ function populateAuthorDropdown(users) {
  * @param {Event} event - Form submission event
  */
 async function createNote(event) {
+    console.log("enter");
     if (event) event.preventDefault();
     
     const form = document.getElementById('createNoteForm');
@@ -461,6 +463,7 @@ async function createNote(event) {
     `;
 
     try {
+		console.log("enter");
         const { createNote } = await graphqlRequest(query, {
             input: { 
                 title, 
