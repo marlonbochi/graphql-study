@@ -285,6 +285,126 @@ function formatDate(dateString) {
 // User Operations
 
 /**
+ * Fetches all users from the server
+ * @returns {Promise<Array>} - Array of user objects
+ */
+async function fetchUsers() {
+    const query = `
+        query GetUsers {
+            users {
+                id
+                username
+                email
+                notes {
+                    id
+                }
+                createdAt
+            }
+        }
+    `;
+    
+    try {
+        const { data } = await graphqlRequest(query);
+        if (data && data.users) {
+            usersCache = data.users;
+            renderUsers(usersCache);
+            return usersCache;
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        renderUsers([]);
+        return [];
+    }
+}
+
+/**
+ * Creates a new user
+ * @param {Event} event - Form submission event
+ */
+async function createUser(event) {
+    if (event) event.preventDefault();
+    
+    const form = document.getElementById('createUserForm');
+    if (!form) return;
+    
+    const formData = new FormData(form);
+    const username = formData.get('username');
+    const email = formData.get('email');
+    const password = formData.get('password');
+    
+    if (!username || !email || !password) {
+        showResponse('Please fill in all required fields', true);
+        return;
+    }
+    
+    const query = `
+        mutation CreateUser($input: CreateUserInput!) {
+            createUser(input: $input) {
+                id
+                username
+                email
+                createdAt
+            }
+        }
+    `;
+    
+    try {
+        const { data } = await graphqlRequest(query, {
+            input: {
+                username,
+                email,
+                password
+            }
+        });
+        
+        if (data && data.createUser) {
+            showResponse('User created successfully!');
+            form.reset();
+            await fetchUsers();
+        }
+    } catch (error) {
+        console.error('Error creating user:', error);
+    }
+}
+
+/**
+ * Fetches all notes from the server
+ * @returns {Promise<Array>} - Array of note objects
+ */
+async function fetchNotes() {
+    const query = `
+        query GetNotes {
+            notes {
+                id
+                title
+                content
+                tags
+                author {
+                    id
+                    username
+                }
+                createdAt
+                updatedAt
+            }
+        }
+    `;
+    
+    try {
+        const { data } = await graphqlRequest(query);
+        if (data && data.notes) {
+            renderNotes(data.notes);
+            return data.notes;
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching notes:', error);
+        renderNotes([]);
+        return [];
+    }
+}
+
+/**
  * Populates the author dropdown in the create note form
  * @param {Array} users - Array of user objects
  */
